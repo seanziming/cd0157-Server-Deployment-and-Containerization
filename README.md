@@ -1,14 +1,45 @@
 # Deploying a Flask API
 
-This is the project starter repo for the course Server Deployment, Containerization, and Testing.
+This project demonstrates containerization and deployment of a Flask API to a Kubernetes cluster using Docker, AWS EKS, CodePipeline, and CodeBuild.
 
-In this project you will containerize and deploy a Flask API to a Kubernetes cluster using Docker, AWS EKS, CodePipeline, and CodeBuild.
+## Deployment Information
 
-The Flask app that will be used for this project consists of a simple API with three endpoints:
+**Live API URL:** http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com
 
-- `GET '/'`: This is a simple health check, which returns the response 'Healthy'. 
-- `POST '/auth'`: This takes a email and password as json arguments and returns a JWT based on a custom secret.
-- `GET '/contents'`: This requires a valid JWT, and returns the un-encrpyted contents of that token. 
+**Project Status:** ✅ Successfully Deployed
+
+**AWS Resources:**
+- EKS Cluster: `simple-jwt-api` (Kubernetes 1.29, 2 nodes)
+- Region: `us-east-2`
+- CI/CD Pipeline: CodePipeline + CodeBuild
+- Container Registry: Amazon ECR
+- GitHub Repository: https://github.com/seanziming/cd0157-Server-Deployment-and-Containerization
+
+## API Endpoints
+
+The Flask app consists of a simple API with three endpoints:
+
+- **`GET '/'`**: Health check endpoint
+  ```bash
+  curl http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/
+  # Returns: "Healthy"
+  ```
+
+- **`POST '/auth'`**: Authentication endpoint - returns JWT token
+  ```bash
+  curl -X POST http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/auth \
+    -H "Content-Type: application/json" \
+    -d '{"email":"test@test.com","password":"test"}'
+  # Returns: {"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."}
+  ```
+
+- **`GET '/contents'`**: Protected endpoint - requires valid JWT
+  ```bash
+  TOKEN="your-jwt-token-here"
+  curl http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/contents \
+    -H "Authorization: Bearer $TOKEN"
+  # Returns: {"email":"test@test.com","exp":1767365655,"nbf":1766156055}
+  ``` 
 
 The app relies on a secret set as the environment variable `JWT_SECRET` to produce a JWT. The built-in Flask server is adequate for local development, but not production, so you will be using the production-ready [Gunicorn](https://gunicorn.org/) server when deploying the app.
 
@@ -74,23 +105,126 @@ cd cd0157-Server-Deployment-and-Containerization/
 ```
 
      
-## Project Steps
+## Project Steps Completed
 
-Completing the project involves several steps:
+✅ **1. Write a Dockerfile for a simple Flask API**
+   - Dockerfile created with Python 3.7, Gunicorn server configuration
 
-1. Write a Dockerfile for a simple Flask API
-2. Build and test the container locally
-3. Create an EKS cluster
-4. Store a secret using AWS Parameter Store
-5. Create a CodePipeline pipeline triggered by GitHub checkins
-6. Create a CodeBuild stage which will build, test, and deploy your code
+✅ **2. Build and test the container locally**
+   - Docker image built and tested successfully
+   - All pytest tests passing (5/5)
 
-For more detail about each of these steps, see the project lesson.
+✅ **3. Create an EKS cluster**
+   - Cluster name: `simple-jwt-api`
+   - Kubernetes version: 1.29
+   - Node count: 2 (t2.medium instances)
+   - Region: us-east-2
 
+✅ **4. Store a secret using AWS Parameter Store**
+   - JWT_SECRET stored as SecureString
+   - Accessible by CodeBuild during deployment
 
+✅ **5. Create a CodePipeline pipeline triggered by GitHub checkins**
+   - Pipeline name: `simple-jwt-api-pipeline-CodePipelineGitHub-SqZFbIUHBRUV`
+   - Source: GitHub repository (master branch)
+   - Automatic trigger on code push
 
+✅ **6. Create a CodeBuild stage which will build, test, and deploy your code**
+   - Tests run in pre_build phase
+   - Docker image built and pushed to ECR
+   - Deployment to EKS cluster
+   - Service exposed via LoadBalancer
 
-$TOKEN = (curl.exe --data '{\"email\":\"abc@xyz.com\",\"password\":\"mypwd\"}' --header "Content-Type: application/json" -X POST http://localhost:8080/auth | ConvertFrom-Json).token
+## Deployment Architecture
 
+```
+GitHub (Code Push)
+    ↓
+CodePipeline (Trigger)
+    ↓
+CodeBuild (Build & Test)
+    ↓
+ECR (Container Registry)
+    ↓
+EKS Cluster (Kubernetes)
+    ↓
+LoadBalancer (Public Access)
+```
 
-curl.exe --request GET "http://localhost:8080/contents" -H "Authorization: Bearer $TOKEN" | ConvertFrom-Json | ConvertTo-Json
+## Additional Configuration Files
+
+- ✅ `aws-auth-patch.yml` - RBAC authorization for CodeBuild
+- ✅ `buildspec.yml` - CodeBuild build specification
+- ✅ `ci-cd-codepipeline.cfn.yml` - CloudFormation template for CI/CD
+- ✅ `iam-role-policy.json` - IAM policy for kubectl role
+- ✅ `trust.json` - IAM role trust policy
+- ✅ `test_main.py` - Unit tests for Flask API
+
+## Testing the Deployed API
+
+### Using PowerShell:
+
+```powershell
+# Health check
+curl http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/
+
+# Get JWT token
+$response = curl -Method POST -Uri "http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/auth" `
+  -Headers @{"Content-Type"="application/json"} `
+  -Body '{"email":"test@test.com","password":"test"}'
+$token = ($response.Content | ConvertFrom-Json).token
+
+# Access protected endpoint
+curl -Uri "http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/contents" `
+  -Headers @{"Authorization"="Bearer $token"}
+```
+
+### Using Bash/curl:
+
+```bash
+# Health check
+curl http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/
+
+# Get JWT token
+export TOKEN=$(curl -X POST http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/auth \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@test.com","password":"test"}' | jq -r '.token')
+
+# Access protected endpoint
+curl http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/contents \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+## Kubernetes Resources
+
+Check deployment status:
+```bash
+kubectl get pods
+kubectl get service simple-jwt-api
+kubectl get deployments
+```
+
+View logs:
+```bash
+kubectl logs -l app=simple-jwt-api
+```
+
+## Cleanup
+
+To avoid ongoing AWS charges, delete resources:
+
+```bash
+# Delete CloudFormation stack (Pipeline, CodeBuild, ECR, S3)
+aws cloudformation delete-stack --stack-name simple-jwt-api-pipeline --region us-east-2
+
+# Delete EKS cluster
+eksctl delete cluster --name simple-jwt-api --region us-east-2
+
+# Delete Parameter Store secret
+aws ssm delete-parameter --name JWT_SECRET --region us-east-2
+
+# Delete IAM role
+aws iam delete-role-policy --role-name UdacityFlaskDeployCBKubectlRole --policy-name eks-describe
+aws iam delete-role --role-name UdacityFlaskDeployCBKubectlRole
+```
+

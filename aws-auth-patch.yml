@@ -1,16 +1,4 @@
-# This is a sample aws-auth-patch.yml file. 
-# Actual aws-auth-patch.yml will be created at /System/Volumes/Data/private/tmp/aws-auth-patch.yml path.
-#
-# TODO: 需要根据你的实际 AWS 资源修改以下内容：
-# 1. 第一个 rolearn: 你的 EKS 节点实例角色 ARN（可在 IAM 控制台 -> 角色页面找到，名称类似 eksctl-xxx-NodeInstanceRole-xxx）
-# 2. 第二个 rolearn: 你为 CodeBuild 创建的 IAM 角色 ARN（如 UdacityFlaskDeployCBKubectlRole）
-# 3. 账号 ID（如 519002666132）需替换为你自己的 AWS 账号 ID
-# 4. 角色名称需与你实际创建的角色一致
-#
-# 获取方式：
-# - AWS 账号 ID：AWS 控制台右上角 -> 账户 -> 我的安全凭证
-# - IAM 角色 ARN：IAM 控制台 -> 角色 -> 点击角色名 -> 复制 ARN
-# - EKS 节点角色：EKS 控制台 -> 集群 -> 计算 -> 节点组 -> 节点 IAM 角色 ARN
+
 
 apiVersion: v1
 data:

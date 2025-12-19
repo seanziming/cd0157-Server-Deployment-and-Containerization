@@ -374,16 +374,3 @@ Resources:
               RunOrder: 1
     DependsOn: CodeBuildProject
 
-# 需要根据你的实际信息修改的参数如下：
-# 1. EksClusterName: EKS 集群名称，建议与你实际创建的集群一致。
-# 2. GitSourceRepo: 你的 GitHub 仓库名（如 your-github-username/cd0157-Server-Deployment-and-Containerization）。
-# 3. GitBranch: 你的代码分支名（如 main 或 master）。
-# 4. GitHubToken: 你的 GitHub 个人访问令牌（PAT），用于 CodePipeline 拉取代码。
-# 5. GitHubUser: 你的 GitHub 用户名。
-# 6. CodeBuildDockerImage: 可用默认值，也可根据 AWS CodeBuild 支持的镜像选择。
-# 7. KubectlRoleName: 你为 CodeBuild/EKS 操作创建的 IAM 角色名（如 UdacityFlaskDeployCBKubectlRole）。
-# 8. 资源段中涉及 ARN、仓库名、集群名等的部分，也需与你实际资源保持一致。
-#
-# 你可以在 AWS 控制台、GitHub 仓库页面、IAM 控制台等处获取上述信息。
-#
-# 修改完成后，建议用 CloudFormation 控制台上传本模板并创建 stack。
