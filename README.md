@@ -15,36 +15,6 @@ This project demonstrates containerization and deployment of a Flask API to a Ku
 - Container Registry: Amazon ECR
 - GitHub Repository: https://github.com/seanziming/cd0157-Server-Deployment-and-Containerization
 
-## API Endpoints
-
-The Flask app consists of a simple API with three endpoints:
-
-- **`GET '/'`**: Health check endpoint
-  ```bash
-  curl http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/
-  # Returns: "Healthy"
-  ```
-
-- **`POST '/auth'`**: Authentication endpoint - returns JWT token
-  ```bash
-  curl -X POST http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/auth \
-    -H "Content-Type: application/json" \
-    -d '{"email":"test@test.com","password":"test"}'
-  # Returns: {"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."}
-  ```
-
-- **`GET '/contents'`**: Protected endpoint - requires valid JWT
-  ```bash
-  TOKEN="your-jwt-token-here"
-  curl http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/contents \
-    -H "Authorization: Bearer $TOKEN"
-  # Returns: {"email":"test@test.com","exp":1767365655,"nbf":1766156055}
-  ``` 
-
-The app relies on a secret set as the environment variable `JWT_SECRET` to produce a JWT. The built-in Flask server is adequate for local development, but not production, so you will be using the production-ready [Gunicorn](https://gunicorn.org/) server when deploying the app.
-
-
-
 ## Prerequisites
 
 * Docker Desktop - Installation instructions for all OSes can be found <a href="https://docs.docker.com/install/" target="_blank">here</a>.
@@ -161,38 +131,54 @@ LoadBalancer (Public Access)
 - ✅ `test_main.py` - Unit tests for Flask API
 
 ## Testing the Deployed API
+**Live API URL:** http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com
+(http) not https
 
 ### Using PowerShell:
 
+**Step 1: Health check**
 ```powershell
-# Health check
 curl http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/
+```
 
-# Get JWT token
-$response = curl -Method POST -Uri "http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/auth" `
-  -Headers @{"Content-Type"="application/json"} `
-  -Body '{"email":"test@test.com","password":"test"}'
-$token = ($response.Content | ConvertFrom-Json).token
+**Step 2: Get JWT token**
+```powershell
+$response = curl -Method POST -Uri "http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/auth" -Headers @{"Content-Type"="application/json"} -Body '{"email":"test@test.com","password":"test"}'
 
-# Access protected endpoint
-curl -Uri "http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/contents" `
-  -Headers @{"Authorization"="Bearer $token"}
+
+$token = ($response.Content | ConvertFrom-Json).token; Write-Host "Token: $token"
+
+```
+
+**Step 3: Access protected endpoint**
+```powershell
+
+curl -Uri "http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/contents" -Headers @{"Authorization"="Bearer $token"}
+
+
+
 ```
 
 ### Using Bash/curl:
 
+**Option 1: Using Python (works on Git Bash without jq)**
 ```bash
 # Health check
+
 curl http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/
 
 # Get JWT token
+
 export TOKEN=$(curl -X POST http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/auth \
   -H "Content-Type: application/json" \
-  -d '{"email":"test@test.com","password":"test"}' | jq -r '.token')
+  -d '{"email":"test@test.com","password":"test"}' -s | python -c "import sys, json; print(json.load(sys.stdin)['token'])")
 
 # Access protected endpoint
+
 curl http://af09f696b8af34e179a41e5856cd3e6c-555148511.us-east-2.elb.amazonaws.com/contents \
   -H "Authorization: Bearer $TOKEN"
+
+
 ```
 
 ## Kubernetes Resources
