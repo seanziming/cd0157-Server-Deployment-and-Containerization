@@ -29,3 +29,12 @@ htmlcov/
 .direnv
 
 .github/**
+
+# Deployment and debug files
+DEPLOYMENT_GUIDE.md
+DEPLOYMENT_manualy_GUIDE.md
+PROJECT_SUMMARY.md
+QUICK_REFERENCE.md
+aws.txt
+debug_test.py
+kubectl

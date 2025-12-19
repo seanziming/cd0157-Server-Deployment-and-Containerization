@@ -86,3 +86,11 @@ Completing the project involves several steps:
 6. Create a CodeBuild stage which will build, test, and deploy your code
 
 For more detail about each of these steps, see the project lesson.
+
+
+
+
+$TOKEN = (curl.exe --data '{\"email\":\"abc@xyz.com\",\"password\":\"mypwd\"}' --header "Content-Type: application/json" -X POST http://localhost:8080/auth | ConvertFrom-Json).token
+
+
+curl.exe --request GET "http://localhost:8080/contents" -H "Authorization: Bearer $TOKEN" | ConvertFrom-Json | ConvertTo-Json
